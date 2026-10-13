@@ -22,9 +22,15 @@ button:active{transform:scale(.95)}
 .s #slaveLabel,.c #slaveLabel{font-size:34px;font-weight:900}
 .rl{background:#334155;border:1px solid #475569;color:#cbd5e1;border-radius:4px;padding:4px 8px;font-size:12px;margin-bottom:5px}
 .m .rl{display:none}
+#topRow{width:100%;display:flex;justify-content:space-between;align-items:flex-start}
+#topRow .rl{margin-left:auto}
+#pinBtn{display:none;background:#334155;border:1px solid #475569;color:#cbd5e1;border-radius:4px;padding:4px 8px;margin-bottom:5px;line-height:0}
+#pinBtn.on{background:#475569;color:#fff}
+#pinBtn svg{width:30px;height:30px}
+
 .m #display{font-size:7rem;padding:16px 20px;border-width:3px}
 .m .digit{width:50px;margin:0 5px}
-.m .separator{width:28px}
+.m .separator{width:28px;-webkit-text-stroke:2.5px currentColor}
 .s .digit,.c .digit{margin:0 12px}
 .s .separator,.c .separator{font-size:1em;width:52px;font-weight:900}
 .s #dg,.c #dg{transform-origin:center;display:flex;flex-direction:column;align-items:center}
@@ -45,7 +51,10 @@ button:active{transform:scale(.95)}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:280px}
 .keypad button{font-size:24px;font-weight:900;height:80px}
 .act{background:#475569}
-.set{background:#0f766e;font-size:16px!important}
+.kh{display:block;font-size:14px;font-weight:600;opacity:.55;margin-top:5px;line-height:1;letter-spacing:.02em}
+@media (hover:none){.kh{display:none}}
+.set{background:#0f766e;font-size:19px!important;padding:5px 4px!important;line-height:1.05}
+.set .kh{font-size:12px;margin-top:3px}
 .rp{display:flex;flex-direction:column;gap:10px}
 .rz{height:80px;background:#556577;font-weight:900}
 .go{height:225px;background:#f8f8f4;color:#000;font-weight:900}
@@ -78,7 +87,7 @@ button:active{transform:scale(.95)}
 <div id="ctl"><div><div id="ctlText" style="font-size:30px;margin-bottom:24px"></div><div id="ctlBtn"><div id="ctlFill"></div><span>7stで引き継ぐ</span></div><div id="ctlHint" style="font-size:26px;margin-top:20px;color:#94a3b8">長押し</div></div></div>
 <div class="container">
 <div id="dg">
-<div style="width:100%;display:flex;justify-content:flex-end"><button class="rl" onclick="location.reload()">RELOAD</button></div>
+<div id="topRow"><button id="pinBtn" onclick="pinToggle()" aria-label="PIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 14v7"/></svg></button><button class="rl" onclick="location.reload()">RELOAD</button></div>
 <div id="display"><span class="digit">0</span><span class="digit">0</span><span class="separator">:</span><span class="digit">0</span><span class="digit">0</span><span class="separator">:</span><span class="digit">0</span><span class="digit">0</span></div>
 <div id="lblRow"><span></span><div id="slaveLabel">REAL TIME / TIMER 7st</div><button id="qrBtn" onclick="qrShow(1)">QR</button></div>
 <div id="cueInfo"><div id="cueLabel">--</div><div id="cueTimeRow"><span id="cueTargetTime">--:--</span><span id="cueRemain">--:--</span></div></div>
@@ -93,15 +102,17 @@ button:active{transform:scale(.95)}
 <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
 <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
 <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
-<button class="act" onclick="clearInput()">CLR</button><button onclick="press(0)">0</button><button class="set" onclick="setTimer()">TIME SET</button>
+<button class="act" onclick="clearInput()">CLR<span class="kh">(Esc)</span></button><button onclick="press(0)">0</button><button class="set" onclick="setTimer()">TIME<br>SET<span class="kh">( T )</span></button>
 </div>
-<div class="rp"><button class="rz" onclick="resetTimer()">set ZERO</button><button class="go" onclick="toggleTimer()">START / STOP</button></div>
+<div class="rp"><button class="rz" onclick="resetTimer()">set ZERO<span class="kh">( Z )</span></button><button class="go" onclick="toggleTimer()">START / STOP<span class="kh">(Ent)</span></button></div>
 </div>
 <div id="cueMasterInfo"><span id="cml">--</span><span id="cmt">--:--</span><span id="cmr">--:--</span></div>
 <div class="cb">
 <button onclick="setCue('CM入り','#20E0D0')">CM入</button>
-<button onclick="setCue('曲入り','#20E0D0')">曲入</button>
-<button onclick="setCue('スタジオ戻り','#FFF02A')">戻り</button>
+<!-- 曲入【保留中】復活するときは、次の1行(空き)を消して、その下のコメントの中のボタンを元に戻す -->
+<span></span>
+<!-- <button onclick="setCue('曲入り','#20E0D0')">曲入</button> -->
+<button onclick="setCue('現場戻り','#FFF02A')">戻り</button>
 <button class="clr" onclick="clearCue()">CUEクリア</button>
 <button id="lock" onclick="toggleLock()">🔓</button>
 </div>
@@ -125,7 +136,8 @@ const P=new URLSearchParams(location.search);
 const ROOM='rooms/'+(P.get('room')||'st-wriZTrcZ8n6adfd8bFkp').replace(/[.#$\[\]\/]/g,'');
 let did;try{did=localStorage.getItem('did');if(!did){did=Math.random().toString(36).slice(2,10);localStorage.setItem('did',did)}}catch(e){did=Math.random().toString(36).slice(2,10)}
 const R=p=>ref(db,ROOM+'/'+p);
-const $=id=>document.getElementById(id);
+let pipWin=null,pipBox=null;
+const $=id=>document.getElementById(id)||(pipWin&&pipWin.document.getElementById(id));
 const q=s=>document.querySelector(s);
 const p2=n=>String(n).padStart(2,'0');
 const fmt=t=>p2(Math.floor(t/3600))+':'+p2(Math.floor(t%3600/60))+':'+p2(t%60);
@@ -165,8 +177,9 @@ $('ctlBtn').onpointerdown=()=>{if(!ownerReady)return;fill.style.transition='widt
 ownerUi();
 
 /* 表示 */
-function blink(){const s=document.querySelectorAll('.separator');
-  s.forEach(e=>{e.style.opacity=1;e.style.color='#ff2222';e.style.textShadow='0 0 8px rgba(255,0,0,.9),0 0 16px rgba(255,0,0,.55)'});
+function blink(){const s=$('display').querySelectorAll('.separator');
+  const g=role==='master'?'0 0 5px rgba(255,0,0,.8),0 0 10px rgba(255,0,0,.45)':'0 0 8px rgba(255,0,0,.9),0 0 16px rgba(255,0,0,.55)';
+  s.forEach(e=>{e.style.opacity=1;e.style.color='#ff2222';e.style.textShadow=g});
   setTimeout(()=>s.forEach(e=>{e.style.opacity=.2;e.style.textShadow='none'}),500)}
 function drawCue(t){
   const on=!!CUE&&CUE.target>t;
@@ -187,8 +200,8 @@ function tick(){
   if(anchor&&Math.abs((Date.now()-anchor.date)-(performance.now()-anchor.perf))>700)resync();
   const t=Math.min(secs(),359999);
   const x=fmt(t).replace(/:/g,'');
-  document.querySelectorAll('#display .digit').forEach((d,i)=>d.textContent=x[i]);
-  if(role!=='master'&&t!==lastBlink){lastBlink=t;blink()}
+  $('display').querySelectorAll('.digit').forEach((d,i)=>d.textContent=x[i]);
+  if(t!==lastBlink){lastBlink=t;if(role!=='master'||T.running)blink()}
   if(can()&&CUE&&t>=CUE.target){CUE=null;set(R('cue'),null).catch(bad)}
   drawCue(t);
 }
@@ -200,6 +213,18 @@ const wr=o=>set(R('timer'),o).catch(bad);
 function ui(){if(role!=='master')return;q('.rz').classList.toggle('disabled',T.running);q('.set').classList.toggle('disabled',T.running)}
 function preview(){const s=buf||saved;if(!s){$('inputPreview').textContent='--:--:--';return}const d=s.padStart(6,'0');$('inputPreview').textContent=d.slice(0,2)+':'+d.slice(2,4)+':'+d.slice(4,6)}
 function press(n){if(!editing){buf='';editing=true}if(buf.length<6){buf+=n;preview()}}
+addEventListener('keydown',e=>{
+  if(role!=='master'||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;
+  const c=e.code;
+  if($('qrOv').style.display==='flex'){if(c==='Escape')qrShow(0);return}
+  let m=/^(?:Digit|Numpad)(\d)$/.exec(c);
+  if(m){press(+m[1]);e.preventDefault();return}
+  if(c==='Enter'||c==='NumpadEnter'){e.preventDefault();toggleTimer()}
+  else if(c==='Escape'){e.preventDefault();clearInput()}
+  else if(c==='KeyT'){e.preventDefault();setTimer()}
+  else if(c==='KeyZ'){e.preventDefault();resetTimer()}
+  else if(c==='Space')e.preventDefault()
+});
 function clearInput(){buf='';saved='';editing=false;preview()}
 function setTimer(){if(!can()||T.running||!buf)return;wr({running:false,value:hms(buf),base:0});saved=buf;editing=false;preview()}
 function resetTimer(){if(!can()||T.running)return;wr({running:false,value:0,base:0})}
@@ -215,7 +240,7 @@ function cueTarget(){
 function setCue(label,color){if(!can()||!buf)return;if(T.running&&off===null&&!anchor)return;set(R('cue'),{label,color,target:cueTarget()}).catch(bad)}
 function clearCue(){if(!can())return;set(R('cue'),null).catch(bad)}
 function qrShow(v){$('qrOv').style.display=v?'flex':'none'}
-Object.assign(window,{press,clearInput,setTimer,resetTimer,toggleTimer,toggleLock,setCue,clearCue,qrShow});
+Object.assign(window,{press,clearInput,setTimer,resetTimer,toggleTimer,toggleLock,setCue,clearCue,qrShow,pinToggle});
 
 /* 子機:TAP HERE を出す */
 if(role!=='master')$('tap').style.display='flex';
@@ -250,6 +275,68 @@ async function awake(){try{if('wakeLock' in navigator){if(!wl){wl=await navigato
 $('tap').onclick=()=>{$('tap').style.display='none';awake()};
 document.addEventListener('pointerdown',()=>{if(!wl)awake()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){awake();resync(true);if(role==='master'){ownerReady=false;ownerUi();goOffline(db);goOnline(db)}}});
+
+/* PIN: 手前に出る小さな窓(パソコンの Chrome / Edge のみ) */
+const PIN_W=300,PIN_H=170;
+let pipHome=[],pipTimer=null,pipSync=null,pwl=null;
+if(role==='cue'&&window.documentPictureInPicture)$('pinBtn').style.display='inline-block';
+async function pipAwake(){
+  if(!pipWin||pwl)return;
+  const w=pipWin;
+  try{
+    const l=await w.navigator.wakeLock.request('screen');
+    if(pipWin!==w){l.release().catch(()=>{});return}
+    pwl=l;l.addEventListener('release',()=>{if(pwl===l)pwl=null})
+  }catch(e){$('wl').textContent='WL(PIN) '+e.name}
+}
+function pipFit(){
+  if(!pipWin||!pipBox)return;
+  pipBox.style.transform='scale(1)';
+  const r=pipBox.getBoundingClientRect();
+  if(!r.width||!r.height)return;
+  pipBox.style.transform='scale('+Math.min(pipWin.innerWidth*.96/r.width,pipWin.innerHeight*.96/r.height)+')';
+}
+function pipRestore(){
+  if(!pipWin)return;
+  const w=pipWin;pipWin=null;
+  try{w.clearInterval(pipTimer);w.clearInterval(pipSync)}catch(e){}
+  pipHome.forEach(([el,mark])=>{if(mark.parentNode)mark.parentNode.insertBefore(el,mark);mark.remove()});
+  pipHome=[];pipBox=null;if(pwl){pwl.release().catch(()=>{});pwl=null}
+  $('pinBtn').classList.remove('on');
+  tick();
+}
+async function pinToggle(){
+  if(pipWin){pipWin.close();return}
+  if(!window.documentPictureInPicture)return;
+  try{
+    const w=await documentPictureInPicture.requestWindow({width:PIN_W,height:PIN_H});
+    document.querySelectorAll('style,link[rel="stylesheet"]').forEach(n=>w.document.head.appendChild(n.cloneNode(true)));
+    w.document.title='REAL TIME / TIMER';
+    w.document.body.className='c pip';
+    const box=w.document.createElement('div');
+    box.className='container';
+    box.style.cssText='width:max-content;flex:none;transform-origin:center';
+    w.document.body.appendChild(box);
+    ['display','slaveLabel','cueInfo'].forEach(id=>{
+      const el=$(id),mark=document.createElement('span');
+      mark.style.display='none';
+      el.parentNode.insertBefore(mark,el);
+      pipHome.push([el,mark]);
+      box.appendChild(el);
+    });
+    pipWin=w;pipBox=box;
+    $('pinBtn').classList.add('on');
+    w.addEventListener('pagehide',pipRestore);
+    w.addEventListener('resize',pipFit);
+    pipTimer=w.setInterval(tick,100);
+    pipSync=w.setInterval(()=>{if(!anchor||performance.now()-lastSync>60000)resync();pipAwake()},5000);
+    pipAwake();
+    pipFit();setTimeout(pipFit,100);
+    if(w.document.fonts)w.document.fonts.ready.then(pipFit);
+    try{w.moveTo((screen.availLeft||0)+16,(screen.availTop||0)+screen.availHeight-w.outerHeight-16)}catch(e){}
+    tick();
+  }catch(e){pipWin=null}
+}
 
 /* 画面の拡大縮小 */
 const dg=$('dg'),box=q('.container');
